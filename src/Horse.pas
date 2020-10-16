@@ -35,7 +35,6 @@ type
 
   THorse = class;
 
-
 {$IF DEFINED(HORSE_ISAPI)}
   THorseProvider = Horse.Provider.ISAPI.THorseProvider<THorse>;
 {$ELSEIF DEFINED(HORSE_APACHE)}
@@ -59,7 +58,7 @@ type
   {$ENDIF}
 {$ELSEIF DEFINED(HORSE_DAEMON)}
   THorseProvider = Horse.Provider.Daemon.THorseProvider<THorse>;
-{$ELSEIF DEFINED(HORSE_VLC)}
+{$ELSEIF DEFINED(HORSE_VCL)}
   THorseProvider = Horse.Provider.VCL.THorseProvider<THorse>;
 {$ELSE}
   THorseProvider =

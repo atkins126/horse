@@ -36,7 +36,7 @@ end.
 
 ## 🧬 Official Middlewares
 
-For an more _maintainable_ middleware _ecosystem_, we've put official [middlewares](https://docs.gofiber.io/middleware) into separate repositories:
+For a more _maintainable_ middleware _ecosystem_, we've put official [middlewares](https://docs.gofiber.io/middleware) into separate repositories:
 
 | Middleware | Delphi | Lazarus |
 | ------------------------------------------------------------------- | -------------------- | --------------------------- |
@@ -57,7 +57,7 @@ This is a list of middlewares that are created by the Horse community, please cr
 | ---------------------------------------------------------------------------------- | -------------------- | --------------------------- |
 |  [bittencourtthulio/etag](https://github.com/bittencourtthulio/Horse-ETag)         | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
 |  [bittencourtthulio/paginate](https://github.com/bittencourtthulio/Horse-Paginate) | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
-|  [gabrielbaltazar/gbswagger](https://bitbucket.org/gabrielbaltazar/gbswagger)      | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
+|  [gabrielbaltazar/gbswagger](https://github.com/gabrielbaltazar/gbswagger)         | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
 |  [willhubner/socketIO](https://github.com/WillHubner/Horse-SocketIO)               | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
 |  [dliocode/ratelimit](https://github.com/dliocode/horse-ratelimit)                 | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
 |  [dliocode/slowdown](https://github.com/dliocode/horse-slowdown)                   | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
