@@ -11,29 +11,43 @@ uses
   SysUtils, Classes, Generics.Collections, fpHTTP, HTTPDefs,
 {$ELSE}
   System.SysUtils, System.Classes, Web.HTTPApp, System.Generics.Collections,
-  {$IFDEF CompilerVersion > 32.0}
+  {$IF CompilerVersion > 32.0}
   Web.ReqMulti,
   {$ENDIF}
 {$ENDIF}
+  Horse.Core.Param,
+  Horse.Core.Param.Header,
   Horse.Commons;
 
 type
-  THorseList = TDictionary<string, string>;
+  THorseSessions = class
+  private
+    FSessions: TObjectDictionary<TSessionClass, TSession>;
+    function GetSession(const ASessionClass: TSessionClass): TSession; overload;
+    function GetObject(const ASessionClass: TSessionClass): TObject; overload;
+  public
+    function SetSession(const ASessionClass: TSessionClass; AInstance: TSession): THorseSessions;
+    property Session[const SessionClass: TSessionClass]: TSession read GetSession;
+    property &Object[const SessionClass: TSessionClass]: TObject read GetObject;
+    constructor Create;
+    destructor Destroy; override;
+  end;
 
   THorseRequest = class
   private
     FWebRequest: {$IF DEFINED(FPC)}TRequest{$ELSE}TWebRequest{$ENDIF};
-    FQuery: THorseList;
-    FParams: THorseList;
-    FContentFields: THorseList;
-    FCookie: THorseList;
+    FHeaders: THorseCoreParam;
+    FQuery: THorseCoreParam;
+    FParams: THorseCoreParam;
+    FContentFields: THorseCoreParam;
+    FCookie: THorseCoreParam;
     FBody: TObject;
     FSession: TObject;
+    FSessions: THorseSessions;
     procedure InitializeQuery;
     procedure InitializeParams;
     procedure InitializeContentFields;
     procedure InitializeCookie;
-    function GetHeaders(AIndex: string): string;
     function IsMultipartForm: Boolean;
     function IsFormURLEncoded: Boolean;
     function CanLoadContentFields: Boolean;
@@ -43,13 +57,14 @@ type
     function Body(ABody: TObject): THorseRequest; overload;
     function Session<T: class>: T; overload;
     function Session(ASession: TObject): THorseRequest; overload;
-    function Query: THorseList;
-    function Params: THorseList;
-    function Cookie: THorseList;
-    function ContentFields: THorseList;
+    function Headers: THorseCoreParam;
+    function Query: THorseCoreParam;
+    function Params: THorseCoreParam;
+    function Cookie: THorseCoreParam;
+    function ContentFields: THorseCoreParam;
     function MethodType: TMethodType;
     function RawWebRequest: {$IF DEFINED(FPC)}TRequest{$ELSE}TWebRequest{$ENDIF};
-    property Headers[index: string]: string read GetHeaders;
+    property Sessions: THorseSessions read FSessions;
     constructor Create(AWebRequest: {$IF DEFINED(FPC)}TRequest{$ELSE}TWebRequest{$ENDIF});
     destructor Destroy; override;
   end;
@@ -114,14 +129,14 @@ begin
   Result := IsMultipartForm or IsFormURLEncoded;
 end;
 
-function THorseRequest.ContentFields: THorseList;
+function THorseRequest.ContentFields: THorseCoreParam;
 begin
   if not Assigned(FContentFields) then
     InitializeContentFields;
   Result := FContentFields;
 end;
 
-function THorseRequest.Cookie: THorseList;
+function THorseRequest.Cookie: THorseCoreParam;
 begin
   if not Assigned(FCookie) then
     InitializeCookie;
@@ -131,10 +146,13 @@ end;
 constructor THorseRequest.Create(AWebRequest: {$IF DEFINED(FPC)}TRequest{$ELSE}TWebRequest{$ENDIF});
 begin
   FWebRequest := AWebRequest;
+  FSessions := THorseSessions.Create;
 end;
 
 destructor THorseRequest.Destroy;
 begin
+  if Assigned(FHeaders) then
+    FreeAndNil(FHeaders);
   if Assigned(FQuery) then
     FreeAndNil(FQuery);
   if Assigned(FParams) then
@@ -145,26 +163,32 @@ begin
     FreeAndNil(FCookie);
   if Assigned(FBody) then
     FBody.Free;
+  if Assigned(FSessions) then
+    FSessions.Free;
   inherited;
 end;
 
-function THorseRequest.GetHeaders(AIndex: string): string;
+function THorseRequest.Headers: THorseCoreParam;
+var
+  LParam: THorseList;
 begin
-  Result := FWebRequest.GetFieldByName(AIndex);
+  if not Assigned(FHeaders) then
+  begin
+    LParam := THorseCoreParamHeader.GetHeaders(FWebRequest);
+    FHeaders := THorseCoreParam.create(LParam);
+  end;
+  result := FHeaders;
 end;
 
 procedure THorseRequest.InitializeContentFields;
 var
   I: Integer;
 begin
-  FContentFields := THorseList.Create;
+  FContentFields := THorseCoreParam.create(THorseList.Create);
   if (not CanLoadContentFields) then
     Exit;
   for I := 0 to Pred(FWebRequest.ContentFields.Count) do
-  begin
-    FContentFields.AddOrSetValue(LowerCase(FWebRequest.ContentFields.Names[I]),
-      FWebRequest.ContentFields.ValueFromIndex[I]);
-  end;
+    FContentFields.Dictionary.AddOrSetValue(FWebRequest.ContentFields.Names[I], FWebRequest.ContentFields.ValueFromIndex[I]);
 end;
 
 procedure THorseRequest.InitializeCookie;
@@ -172,17 +196,17 @@ var
   LParam: TArray<string>;
   LItem: string;
 begin
-  FCookie := THorseList.Create;
+  FCookie := THorseCoreParam.create(THorseList.Create);
   for LItem in FWebRequest.CookieFields do
   begin
     LParam := LItem.Split(['=']);
-    FCookie.Add(LParam[KEY], LParam[VALUE]);
+    FCookie.Dictionary.AddOrSetValue(LParam[KEY], LParam[VALUE]);
   end;
 end;
 
 procedure THorseRequest.InitializeParams;
 begin
-  FParams := THorseList.Create;
+  FParams := THorseCoreParam.create(THorseList.Create);
 end;
 
 procedure THorseRequest.InitializeQuery;
@@ -190,15 +214,15 @@ var
   LItem: string;
   LKey: string;
   LValue: string;
-  LEqualFirstPos : Integer;  
+  LEqualFirstPos: Integer;
 begin
-  FQuery := THorseList.Create;
+  FQuery := THorseCoreParam.create(THorseList.Create);
   for LItem in FWebRequest.QueryFields do
   begin
     LEqualFirstPos := Pos('=', Litem);
     LKey := Copy(Litem, 1, LEqualFirstPos - 1);
     LValue := Copy(Litem, LEqualFirstPos + 1, Length(LItem));
-    FQuery.Add(LKey, LValue);
+    FQuery.Dictionary.AddOrSetValue(LKey, LValue);
   end;
 end;
 
@@ -219,14 +243,14 @@ begin
   Result := {$IF DEFINED(FPC)}StringCommandToMethodType(FWebRequest.Method);{$ELSE}FWebRequest.MethodType;{$ENDIF}
 end;
 
-function THorseRequest.Params: THorseList;
+function THorseRequest.Params: THorseCoreParam;
 begin
   if not Assigned(FParams) then
     InitializeParams;
   Result := FParams;
 end;
 
-function THorseRequest.Query: THorseList;
+function THorseRequest.Query: THorseCoreParam;
 begin
   if not Assigned(FQuery) then
     InitializeQuery;
@@ -324,7 +348,7 @@ end;
 
 function THorseHackRequest.GetParams: THorseList;
 begin
-  Result := FParams;
+  Result := FParams.Dictionary;
 end;
 
 function THorseHackRequest.GetWebRequest: {$IF DEFINED(FPC)}TRequest{$ELSE}TWebRequest{$ENDIF};
@@ -352,6 +376,38 @@ end;
 procedure THorseHackResponse.SetContent(AContent: TObject);
 begin
   FContent := AContent;
+end;
+
+{ THorseSessions }
+
+constructor THorseSessions.Create;
+begin
+  FSessions := TObjectDictionary<TSessionClass, TSession>.Create([doOwnsValues]);
+end;
+
+destructor THorseSessions.Destroy;
+begin
+  FSessions.Free;
+  inherited Destroy;
+end;
+
+function THorseSessions.GetObject(const ASessionClass: TSessionClass): TObject;
+begin
+  Result := FSessions.Items[ASessionClass];
+end;
+
+function THorseSessions.GetSession(const ASessionClass: TSessionClass): TSession;
+begin
+  Result := FSessions.Items[ASessionClass];
+end;
+
+function THorseSessions.SetSession(const ASessionClass: TSessionClass;
+  AInstance: TSession): THorseSessions;
+begin
+  Result := Self;
+  if not ASessionClass.InheritsFrom(AInstance.ClassType) then
+    raise Exception.CreateFmt('SessionClass differs from of instance[%s].', [AInstance.ClassType.ClassName]);
+  FSessions.AddOrSetValue(ASessionClass, AInstance);
 end;
 
 end.

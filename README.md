@@ -15,11 +15,11 @@
 ## ⚙️ Installation
 Installation is done using the [`boss install`](https://github.com/HashLoad/boss) command:
 ``` sh
-$ boss install horse
+boss install horse
 ```
 * (Optional) Install [**wizard**](https://github.com/HashLoad/horse-wizard)
 
-## ⚡️ Quickstart
+## ⚡️ Quickstart Delphi
 ```delphi
 uses Horse;
 
@@ -32,6 +32,23 @@ begin
 
   THorse.Listen(9000);
 end.
+```
+
+## ⚡️ Quickstart Lazarus
+```delphi
+{$MODE DELPHI}{$H+}
+
+uses Horse;
+
+procedure GetPing(Req: THorseRequest; Res: THorseResponse; Next: TNextProc);
+begin
+  Res.Send('Pong');
+end;
+
+begin
+  THorse.Get('/ping', GetPing);
+  THorse.Listen(9000);
+end. 
 ```
 
 ## 🧬 Official Middlewares
@@ -54,20 +71,25 @@ For a more _maintainable_ middleware _ecosystem_, we've put official [middleware
 This is a list of middlewares that are created by the Horse community, please create a PR if you want to see yours!
 
 | Middleware | Delphi | Lazarus |
-| ------------------------------------------------------------------------------------------------ | -------------------- | --------------------------- |
-|  [bittencourtthulio/etag](https://github.com/bittencourtthulio/Horse-ETag)                       | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;✔️ |
-|  [bittencourtthulio/paginate](https://github.com/bittencourtthulio/Horse-Paginate)               | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;✔️ |
-|  [bittencourtthulio/cachecontrol](https://github.com/bittencourtthulio/horse-cachecontrol)       | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
-|  [gabrielbaltazar/gbswagger](https://github.com/gabrielbaltazar/gbswagger)                       | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
-|  [willhubner/socketIO](https://github.com/WillHubner/Horse-SocketIO)                             | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
-|  [dliocode/ratelimit](https://github.com/dliocode/horse-ratelimit)                               | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
-|  [dliocode/slowdown](https://github.com/dliocode/horse-slowdown)                                 | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
-|  [giorgiobazzo/upload](https://github.com/giorgiobazzo/horse-upload)                             | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
-|  [dliocode/query](https://github.com/dliocode/horse-query)                                       | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
-|  [CarlosHe/healthcheck](https://github.com/CarlosHe/horse-healthcheck)                           | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
-|  [CarlosHe/staticfiles](https://github.com/CarlosHe/horse-staticfiles)                           | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
-|  [CachopaWeb/horse-server-static](https://github.com/CachopaWeb/horse-server-static)             | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
-|  [arvanus/horse-exception-logger](https://github.com/arvanus/horse-exception-logger)             | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;✔️ |
+| -------------------------------------------------------------------------------------------------------- | -------------------- | --------------------------- |
+|  [bittencourtthulio/etag](https://github.com/bittencourtthulio/Horse-ETag)                               | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;✔️ |
+|  [bittencourtthulio/paginate](https://github.com/bittencourtthulio/Horse-Paginate)                       | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;✔️ |
+|  [bittencourtthulio/cachecontrol](https://github.com/bittencourtthulio/horse-cachecontrol)               | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
+|  [gabrielbaltazar/gbswagger](https://github.com/gabrielbaltazar/gbswagger)                               | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
+|  [willhubner/socketIO](https://github.com/WillHubner/Horse-SocketIO)                                     | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
+|  [dliocode/ratelimit](https://github.com/dliocode/horse-ratelimit)                                       | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
+|  [dliocode/slowdown](https://github.com/dliocode/horse-slowdown)                                         | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
+|  [giorgiobazzo/upload](https://github.com/giorgiobazzo/horse-upload)                                     | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
+|  [dliocode/query](https://github.com/dliocode/horse-query)                                               | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
+|  [CarlosHe/healthcheck](https://github.com/CarlosHe/horse-healthcheck)                                   | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
+|  [CarlosHe/staticfiles](https://github.com/CarlosHe/horse-staticfiles)                                   | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
+|  [CachopaWeb/horse-server-static](https://github.com/CachopaWeb/horse-server-static)                     | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
+|  [arvanus/horse-exception-logger](https://github.com/arvanus/horse-exception-logger)                     | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;✔️ |
+|  [claudneysessa/Horse-CSResponsePagination](https://github.com/claudneysessa/Horse-CSResponsePagination) | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
+|  [claudneysessa/Horse-XSuperObjects](https://github.com/claudneysessa/Horse-XSuperObjects)               | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
+
+## Delphi Versions
+`Horse` works with Delphi 11 Alexandria, Delphi 10.4 Sydney, Delphi 10.3 Rio, Delphi 10.2 Tokyo, Delphi 10.1 Berlin, Delphi 10 Seattle, Delphi XE8 and Delphi XE7.
 
 ## ⚠️ License
 
