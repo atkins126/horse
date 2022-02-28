@@ -12,12 +12,10 @@ uses
 {$ELSE}
   System.SysUtils, System.Classes, Web.HTTPApp, System.Generics.Collections,
   {$IF CompilerVersion > 32.0}
-  Web.ReqMulti,
+    Web.ReqMulti,
   {$ENDIF}
 {$ENDIF}
-  Horse.Core.Param,
-  Horse.Core.Param.Header,
-  Horse.Commons;
+  Horse.Core.Param, Horse.Core.Param.Header, Horse.Commons;
 
 type
   THorseSessions = class
@@ -69,14 +67,6 @@ type
     destructor Destroy; override;
   end;
 
-  THorseHackRequest = class(THorseRequest)
-  public
-    function GetWebRequest: {$IF DEFINED(FPC)}TRequest{$ELSE}TWebRequest{$ENDIF}; deprecated 'Dont use the THorseHackRequest class. Use RawWebRequest method of THorseRequest class';
-    function GetParams: THorseList; deprecated 'Dont use the THorseHackRequest class. Use Params method of THorseRequest class';
-    procedure SetBody(ABody: TObject); deprecated 'Dont use the THorseHackRequest class. Use Body method of THorseRequest class';
-    procedure SetSession(ASession: TObject); deprecated 'Dont use the THorseHackRequest class. Use Session method of THorseRequest class';
-  end;
-
   THorseResponse = class
   private
     FWebResponse: {$IF DEFINED(FPC)}TResponse{$ELSE}TWebResponse{$ENDIF};
@@ -84,6 +74,8 @@ type
   public
     function Send(AContent: string): THorseResponse; overload;
     function Send<T: class>(AContent: T): THorseResponse; overload;
+    function RedirectTo(ALocation: string): THorseResponse; overload;
+    function RedirectTo(ALocation: string; AStatus: THTTPStatus): THorseResponse; overload;
     function Status(AStatus: Integer): THorseResponse; overload;
     function Status(AStatus: THTTPStatus): THorseResponse; overload;
     function Status: Integer; overload;
@@ -93,13 +85,6 @@ type
     function RawWebResponse: {$IF DEFINED(FPC)}TResponse{$ELSE}TWebResponse{$ENDIF};
     constructor Create(AWebResponse: {$IF DEFINED(FPC)}TResponse{$ELSE}TWebResponse{$ENDIF});
     destructor Destroy; override;
-  end;
-
-  THorseHackResponse = class(THorseResponse)
-  public
-    function GetWebResponse: {$IF DEFINED(FPC)}TResponse{$ELSE}TWebResponse{$ENDIF}; deprecated 'Dont use the THorseHackResponse class. Use RawWebResponse method of THorseResponse class';
-    function GetContent: TObject; deprecated 'Dont use the THorseHackResponse class. Use Content method of THorseResponse class';
-    procedure SetContent(AContent: TObject); deprecated 'Dont use the THorseHackResponse class. Use Content method of THorseResponse class';
   end;
 
 implementation
@@ -175,7 +160,7 @@ begin
   if not Assigned(FHeaders) then
   begin
     LParam := THorseCoreParamHeader.GetHeaders(FWebRequest);
-    FHeaders := THorseCoreParam.create(LParam);
+    FHeaders := THorseCoreParam.Create(LParam).Required(False);
   end;
   result := FHeaders;
 end;
@@ -184,7 +169,7 @@ procedure THorseRequest.InitializeContentFields;
 var
   I: Integer;
 begin
-  FContentFields := THorseCoreParam.create(THorseList.Create);
+  FContentFields := THorseCoreParam.Create(THorseList.Create).Required(False);
   if (not CanLoadContentFields) then
     Exit;
   for I := 0 to Pred(FWebRequest.ContentFields.Count) do
@@ -196,7 +181,7 @@ var
   LParam: TArray<string>;
   LItem: string;
 begin
-  FCookie := THorseCoreParam.create(THorseList.Create);
+  FCookie := THorseCoreParam.Create(THorseList.Create).Required(False);
   for LItem in FWebRequest.CookieFields do
   begin
     LParam := LItem.Split(['=']);
@@ -206,17 +191,15 @@ end;
 
 procedure THorseRequest.InitializeParams;
 begin
-  FParams := THorseCoreParam.create(THorseList.Create);
+  FParams := THorseCoreParam.Create(THorseList.Create).Required(True);
 end;
 
 procedure THorseRequest.InitializeQuery;
 var
-  LItem: string;
-  LKey: string;
-  LValue: string;
+  LItem, LKey, LValue: string;
   LEqualFirstPos: Integer;
 begin
-  FQuery := THorseCoreParam.create(THorseList.Create);
+  FQuery := THorseCoreParam.Create(THorseList.Create).Required(False);
   for LItem in FWebRequest.QueryFields do
   begin
     LEqualFirstPos := Pos('=', Litem);
@@ -322,6 +305,18 @@ begin
   Result := Self;
 end;
 
+function THorseResponse.RedirectTo(ALocation: string): THorseResponse;
+begin
+  FWebResponse.SetCustomHeader('Location', ALocation);
+  Result := Status(THTTPStatus.SeeOther);
+end;
+
+function THorseResponse.RedirectTo(ALocation: string; AStatus: THTTPStatus): THorseResponse;
+begin
+  FWebResponse.SetCustomHeader('Location', ALocation);
+  Result := Status(AStatus);
+end;
+
 function THorseResponse.Status(AStatus: THTTPStatus): THorseResponse;
 begin
   {$IF DEFINED(FPC)}FWebResponse.Code{$ELSE}FWebResponse.StatusCode{$ENDIF} := AStatus.ToInteger;
@@ -337,45 +332,6 @@ function THorseResponse.Status(AStatus: Integer): THorseResponse;
 begin
   {$IF DEFINED(FPC)}FWebResponse.Code{$ELSE}FWebResponse.StatusCode{$ENDIF} := AStatus;
   Result := Self;
-end;
-
-{ THorseHackRequest }
-
-function THorseHackResponse.GetContent: TObject;
-begin
-  Result := FContent;
-end;
-
-function THorseHackRequest.GetParams: THorseList;
-begin
-  Result := FParams.Dictionary;
-end;
-
-function THorseHackRequest.GetWebRequest: {$IF DEFINED(FPC)}TRequest{$ELSE}TWebRequest{$ENDIF};
-begin
-  Result := FWebRequest;
-end;
-
-procedure THorseHackRequest.SetBody(ABody: TObject);
-begin
-  FBody := ABody;
-end;
-
-procedure THorseHackRequest.SetSession(ASession: TObject);
-begin
-  FSession := ASession;
-end;
-
-{ THorseHackResponse }
-
-function THorseHackResponse.GetWebResponse: {$IF DEFINED(FPC)}TResponse{$ELSE}TWebResponse{$ENDIF};
-begin
-  Result := FWebResponse;
-end;
-
-procedure THorseHackResponse.SetContent(AContent: TObject);
-begin
-  FContent := AContent;
 end;
 
 { THorseSessions }
@@ -401,8 +357,7 @@ begin
   Result := FSessions.Items[ASessionClass];
 end;
 
-function THorseSessions.SetSession(const ASessionClass: TSessionClass;
-  AInstance: TSession): THorseSessions;
+function THorseSessions.SetSession(const ASessionClass: TSessionClass; AInstance: TSession): THorseSessions;
 begin
   Result := Self;
   if not ASessionClass.InheritsFrom(AInstance.ClassType) then

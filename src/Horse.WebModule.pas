@@ -1,7 +1,9 @@
 unit Horse.WebModule;
+
 {$IF DEFINED(FPC)}
   {$MODE DELPHI}{$H+}
 {$ENDIF}
+
 interface
 
 uses
@@ -13,40 +15,45 @@ uses
   Horse.Core, Horse.Commons;
 
 type
-
 {$IF DEFINED(FPC)}
   THorseWebModule = class(TFPWebModule)
-      procedure DoOnRequest(ARequest: TRequest; AResponse: TResponse; var AHandled: Boolean); override;
+    procedure DoOnRequest(ARequest: TRequest; AResponse: TResponse; var AHandled: Boolean); override;
 {$ELSE}
   THorseWebModule = class(TWebModule)
 {$ENDIF}
     procedure HandlerAction(Sender: TObject; Request: {$IF DEFINED(FPC)}TRequest{$ELSE}  TWebRequest {$ENDIF}; Response: {$IF DEFINED(FPC)}TResponse{$ELSE}  TWebResponse {$ENDIF}; var Handled: Boolean);
   private
     FHorse: THorseCore;
+    class var FInstance: THorseWebModule;
   public
     property Horse: THorseCore read FHorse write FHorse;
     constructor Create(AOwner: TComponent); override;
+  	class function GetInstance: THorseWebModule;
   end;
 
 var
-  {$IF DEFINED(FPC)}
-    HorseWebModule: THorseWebModule;
-  {$ELSE}
-    WebModuleClass: TComponentClass = THorseWebModule;
-  {$ENDIF}
-
+{$IF DEFINED(FPC)}
+  HorseWebModule: THorseWebModule;
+{$ELSE}
+  WebModuleClass: TComponentClass = THorseWebModule;
+{$ENDIF}
 
 implementation
 
 uses Horse.HTTP, Horse.Exception;
 
 {%CLASSGROUP 'System.Classes.TPersistent'}
+
 {$IF DEFINED(FPC)}
   {$R Horse.WebModule.lfm}
 {$ELSE}
   {$R *.dfm}
 {$ENDIF}
 
+class function THorseWebModule.GetInstance: THorseWebModule;
+begin
+  Result := FInstance;
+end;
 
 constructor THorseWebModule.Create(AOwner: TComponent);
 begin
@@ -56,6 +63,7 @@ begin
   inherited;
 {$ENDIF}
   FHorse := THorseCore.GetInstance;
+  FInstance := Self;
 end;
 
 {$IF DEFINED(FPC)}
@@ -94,4 +102,5 @@ end;
 initialization
   RegisterHTTPModule(THorseWebModule);
 {$ENDIF}
+
 end.
