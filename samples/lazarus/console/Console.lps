@@ -4,12 +4,12 @@
     <PathDelim Value="\"/>
     <Version Value="12"/>
     <BuildModes Active="Default"/>
-    <Units Count="25">
+    <Units Count="26">
       <Unit0>
         <Filename Value="Console.lpr"/>
         <IsPartOfProject Value="True"/>
         <IsVisibleTab Value="True"/>
-        <CursorPos X="8" Y="9"/>
+        <CursorPos X="33" Y="9"/>
         <UsageCount Value="56"/>
         <Loaded Value="True"/>
       </Unit0>
@@ -58,7 +58,7 @@
         <Filename Value="..\..\..\src\Horse.Commons.pas"/>
         <EditorIndex Value="-1"/>
         <TopLine Value="17"/>
-        <CursorPos X="5" Y="43"/>
+        <CursorPos X="14" Y="21"/>
         <UsageCount Value="24"/>
       </Unit7>
       <Unit8>
@@ -178,17 +178,19 @@
         <CursorPos X="44" Y="23"/>
         <UsageCount Value="10"/>
       </Unit24>
+      <Unit25>
+        <Filename Value="..\..\..\src\Horse.Core.pas"/>
+        <EditorIndex Value="-1"/>
+        <TopLine Value="346"/>
+        <CursorPos X="38" Y="370"/>
+        <UsageCount Value="10"/>
+        <Bookmarks Count="2">
+          <Item0 X="91" Y="58" ID="2"/>
+          <Item1 X="3" Y="287" ID="1"/>
+        </Bookmarks>
+      </Unit25>
     </Units>
-    <JumpHistory Count="2" HistoryIndex="1">
-      <Position1>
-        <Filename Value="Console.lpr"/>
-        <Caret Line="13" Column="28"/>
-      </Position1>
-      <Position2>
-        <Filename Value="Console.lpr"/>
-        <Caret Line="14" Column="25"/>
-      </Position2>
-    </JumpHistory>
+    <JumpHistory HistoryIndex="-1"/>
     <RunParams>
       <FormatVersion Value="2"/>
       <Modes ActiveMode=""/>
