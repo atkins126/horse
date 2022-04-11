@@ -49,9 +49,9 @@ type
     class procedure SetRoutes(const AValue: THorseRouterTree); static;
     class function MakeHorseModule: THorseModule;
 
-    {$IFNDEF FPC}
     class function GetCallback(const ACallbackRequest: THorseCallbackRequestResponse): THorseCallback; overload;
     class function GetCallback(const ACallbackRequest: THorseCallbackRequest): THorseCallback; overload;
+    {$IFNDEF FPC}
     class function GetCallback(const ACallbackResponse: THorseCallbackResponse): THorseCallback; overload;
     {$ENDIF}
 
@@ -73,48 +73,55 @@ type
     class function Use(const APath: string; const ACallbacks: array of THorseCallback): THorseCore; overload;
     class function Use(const ACallbacks: array of THorseCallback): THorseCore; overload;
 
-    class function Get(const APath: string; const ACallback: THorseCallback): THorseCore; overload;
+    class function All(const APath: string; const ACallback: THorseCallback): THorseCore; overload;
+    class function All(const APath: string; const ACallback: THorseCallbackRequestResponse): THorseCore; overload;
+    class function All(const APath: string; const ACallback: THorseCallbackRequest): THorseCore; overload;
     {$IFNDEF FPC}
+    class function All(const APath: string; const ACallback: THorseCallbackResponse): THorseCore; overload;
+    {$IFEND}
+
+    class function Get(const APath: string; const ACallback: THorseCallback): THorseCore; overload;
     class function Get(const APath: string; const ACallback: THorseCallbackRequestResponse): THorseCore; overload;
     class function Get(const APath: string; const ACallback: THorseCallbackRequest): THorseCore; overload;
+    {$IFNDEF FPC}
     class function Get(const APath: string; const ACallback: THorseCallbackResponse): THorseCore; overload;
     {$IFEND}
 
     class function Put(const APath: string; const ACallback: THorseCallback): THorseCore; overload;
-    {$IFNDEF FPC}
     class function Put(const APath: string; const ACallback: THorseCallbackRequestResponse): THorseCore; overload;
     class function Put(const APath: string; const ACallback: THorseCallbackRequest): THorseCore; overload;
+    {$IFNDEF FPC}
     class function Put(const APath: string; const ACallback: THorseCallbackResponse): THorseCore; overload;
     {$IFEND}
 
     {$IF (DEFINED(FPC) or (CompilerVersion > 27.0))}
     class function Patch(const APath: string; const ACallback: THorseCallback): THorseCore; overload;
-      {$IFNDEF FPC}
       class function Patch(const APath: string; const ACallback: THorseCallbackRequestResponse): THorseCore; overload;
       class function Patch(const APath: string; const ACallback: THorseCallbackRequest): THorseCore; overload;
+      {$IFNDEF FPC}
       class function Patch(const APath: string; const ACallback: THorseCallbackResponse): THorseCore; overload;
       {$IFEND}
     {$IFEND}
 
     class function Head(const APath: string; const ACallback: THorseCallback): THorseCore; overload;
-    {$IFNDEF FPC}
     class function Head(const APath: string; const ACallback: THorseCallbackRequestResponse): THorseCore; overload;
     class function Head(const APath: string; const ACallback: THorseCallbackRequest): THorseCore; overload;
+    {$IFNDEF FPC}
     class function Head(const APath: string; const ACallback: THorseCallbackResponse): THorseCore; overload;
     {$IFEND}
 
     class function Post(const APath: string; const ACallback: THorseCallback): THorseCore; overload;
-    {$IFNDEF FPC}
     class function Post(const APath: string; const ACallback: THorseCallbackRequestResponse): THorseCore; overload;
     class function Post(const APath: string; const ACallback: THorseCallbackRequest): THorseCore; overload;
+    {$IFNDEF FPC}
     class function Post(const APath: string; const ACallback: THorseCallbackResponse): THorseCore; overload;
     {$IFEND}
 
     {$IF (defined(fpc) or (CompilerVersion > 27.0))}
     class function Delete(const APath: string; const ACallback: THorseCallback): THorseCore; overload;
-      {$IFNDEF FPC}
       class function Delete(const APath: string; const ACallback: THorseCallbackRequestResponse): THorseCore; overload;
       class function Delete(const APath: string; const ACallback: THorseCallbackRequest): THorseCore; overload;
+      {$IFNDEF FPC}
       class function Delete(const APath: string; const ACallback: THorseCallbackResponse): THorseCore; overload;
       {$IFEND}
     {$IFEND}
@@ -255,7 +262,6 @@ begin
 end;
 
 {$IF (defined(fpc) or (CompilerVersion > 27.0))}
-  {$IFNDEF FPC}
 class function THorseCore.Delete(const APath: string; const ACallback: THorseCallbackRequestResponse): THorseCore;
 begin
   Result := Delete(APath, GetCallback(ACallback));
@@ -266,11 +272,12 @@ begin
   Result := Delete(APath, GetCallback(ACallback));
 end;
 
+{$IFNDEF FPC}
 class function THorseCore.Delete(const APath: string; const ACallback: THorseCallbackResponse): THorseCore;
 begin
   Result := Delete(APath, GetCallback(ACallback));
 end;
-  {$IFEND}
+{$IFEND}
 
 class function THorseCore.Delete(const APath: string; const ACallback: THorseCallback): THorseCore;
 begin
@@ -298,7 +305,6 @@ begin
 end;
 
 {$IF (defined(fpc) or (CompilerVersion > 27.0))}
-  {$IFNDEF FPC}
 class function THorseCore.Patch(const APath: string; const ACallback: THorseCallbackRequestResponse): THorseCore;
 begin
   Result := Patch(APath, GetCallback(ACallback));
@@ -309,11 +315,12 @@ begin
   Result := Patch(APath, GetCallback(ACallback));
 end;
 
+{$IFNDEF FPC}
 class function THorseCore.Patch(const APath: string; const ACallback: THorseCallbackResponse): THorseCore;
 begin
   Result := Patch(APath, GetCallback(ACallback));
 end;
-  {$IFEND}
+{$IFEND}
 
 class function THorseCore.Patch(const APath: string; const ACallback: THorseCallback): THorseCore;
 begin
@@ -336,6 +343,34 @@ begin
   for LCallback in ACallbacks do
     Use(LCallback);
 end;
+
+class function THorseCore.All(const APath: string; const ACallback: THorseCallback): THorseCore;
+var
+  LMethodType: TMethodType;
+begin
+  for LMethodType := Low(TMethodType) to High(TMethodType) do
+  begin
+    Result := RegisterCallbacksRoute(LMethodType, APath);
+    RegisterRoute(LMethodType, APath, ACallback);
+  end;
+end;
+
+class function THorseCore.All(const APath: string; const ACallback: THorseCallbackRequestResponse): THorseCore;
+begin
+  Result := All(APath, GetCallback(ACallback));
+end;
+
+class function THorseCore.All(const APath: string; const ACallback: THorseCallbackRequest): THorseCore;
+begin
+  Result := All(APath, GetCallback(ACallback));
+end;
+
+{$IFNDEF FPC}
+class function THorseCore.All(const APath: string; const ACallback: THorseCallbackResponse): THorseCore;
+begin
+  Result := All(APath, GetCallback(ACallback));
+end;
+{$IFEND}
 
 class function THorseCore.Version: string;
 begin
@@ -363,19 +398,15 @@ begin
   Result.Routes.RegisterMiddleware(TrimPath(APath), ACallback);
 end;
 
-{$IFNDEF FPC}
 class function THorseCore.Head(const APath: string; const ACallback: THorseCallbackRequestResponse): THorseCore;
 begin
   Result := Head(APath, GetCallback(ACallback));
 end;
-{$IFEND}
 
-{$IFNDEF FPC}
 class function THorseCore.Head(const APath: string; const ACallback: THorseCallbackRequest): THorseCore;
 begin
   Result := Head(APath, GetCallback(ACallback));
 end;
-{$IFEND}
 
 {$IFNDEF FPC}
 class function THorseCore.Head(const APath: string; const ACallback: THorseCallbackResponse): THorseCore;
@@ -384,23 +415,23 @@ begin
 end;
 {$IFEND}
 
-{$IFNDEF FPC}
 class function THorseCore.Get(const APath: string; const ACallback: THorseCallbackRequest): THorseCore;
 begin
   Result := Get(APath, GetCallback(ACallback));
 end;
-{$IFEND}
 
-{$IFNDEF FPC}
 class function THorseCore.GetCallback(const ACallbackRequest: THorseCallbackRequestResponse): THorseCallback;
 begin
   Result :=
+    {$IFDEF FPC}
+     THorseCallback(ACallbackRequest);
+    {$ELSE}
     procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
     begin
       ACallbackRequest(Req, Res);
     end;
+    {$IFEND}
 end;
-{$IFEND}
 
 {$IFNDEF FPC}
 class function THorseCore.GetCallback(const ACallbackResponse: THorseCallbackResponse): THorseCallback;
@@ -413,17 +444,19 @@ begin
 end;
 {$IFEND}
 
-{$IFNDEF FPC}
 class function THorseCore.GetCallback(const ACallbackRequest: THorseCallbackRequest): THorseCallback;
 begin
   Result :=
+    {$IFDEF FPC}
+     THorseCallback(ACallbackRequest);
+    {$ELSE}
     procedure(Req: THorseRequest; Res: THorseResponse; Next: TProc)
     begin
       Res.Status(THTTPStatus.NoContent);
       ACallbackRequest(Req);
     end;
+    {$IFEND}
 end;
-{$IFEND}
 
 {$IFNDEF FPC}
 class function THorseCore.Get(const APath: string; const ACallback: THorseCallbackResponse): THorseCore;
@@ -432,26 +465,20 @@ begin
 end;
 {$IFEND}
 
-{$IFNDEF FPC}
 class function THorseCore.Get(const APath: string; const ACallback: THorseCallbackRequestResponse): THorseCore;
 begin
   Result := Get(APath, GetCallback(ACallback));
 end;
-{$IFEND}
 
-{$IFNDEF FPC}
 class function THorseCore.Post(const APath: string; const ACallback: THorseCallbackRequestResponse): THorseCore;
 begin
   Result := Post(APath, GetCallback(ACallback));
 end;
-{$IFEND}
 
-{$IFNDEF FPC}
 class function THorseCore.Post(const APath: string; const ACallback: THorseCallbackRequest): THorseCore;
 begin
   Result := Post(APath, GetCallback(ACallback));
 end;
-{$IFEND}
 
 {$IFNDEF FPC}
 class function THorseCore.Post(const APath: string; const ACallback: THorseCallbackResponse): THorseCore;
@@ -460,19 +487,15 @@ begin
 end;
 {$IFEND}
 
-{$IFNDEF FPC}
 class function THorseCore.Put(const APath: string; const ACallback: THorseCallbackRequestResponse): THorseCore;
 begin
   Result := Put(APath, GetCallback(ACallback));
 end;
-{$IFEND}
 
-{$IFNDEF FPC}
 class function THorseCore.Put(const APath: string; const ACallback: THorseCallbackRequest): THorseCore;
 begin
   Result := Put(APath, GetCallback(ACallback));
 end;
-{$IFEND}
 
 {$IFNDEF FPC}
 class function THorseCore.Put(const APath: string; const ACallback: THorseCallbackResponse): THorseCore;
