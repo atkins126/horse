@@ -4,7 +4,7 @@
   </a>  
 </p><br>
 <p align="center">
-  <b>Horse</b> is an <a href="https://github.com/expressjs/express">Express</a> inspired <b>web framework</b> for Delphi.<br>Designed to <b>ease</b> things up for <b>fast</b> development in a <b>minimalist</b> way and with high <b>performance</b>.
+  <b>Horse</b> is an <a href="https://github.com/expressjs/express">Express</a> inspired <b>web framework</b> for Delphi and Lazarus.<br>Designed to <b>ease</b> things up for <b>fast</b> development in a <b>minimalist</b> way and with high <b>performance</b>.
 </p><br>
 <p align="center">
   <a href="https://t.me/hashload">
@@ -76,14 +76,14 @@ This is a list of middlewares that are created by the Horse community, please cr
 |  [bittencourtthulio/paginate](https://github.com/bittencourtthulio/Horse-Paginate)                       | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;✔️ |
 |  [bittencourtthulio/cachecontrol](https://github.com/bittencourtthulio/horse-cachecontrol)               | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
 |  [gabrielbaltazar/gbswagger](https://github.com/gabrielbaltazar/gbswagger)                               | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
-|  [willhubner/socketIO](https://github.com/WillHubner/Horse-SocketIO)                                     | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;✔️ |
+|  [willhubner/socketIO](https://github.com/WillHubner/Horse-SocketIO)                                     | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
 |  [dliocode/ratelimit](https://github.com/dliocode/horse-ratelimit)                                       | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
 |  [dliocode/slowdown](https://github.com/dliocode/horse-slowdown)                                         | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
 |  [giorgiobazzo/upload](https://github.com/giorgiobazzo/horse-upload)                                     | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
 |  [dliocode/query](https://github.com/dliocode/horse-query)                                               | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
 |  [CarlosHe/healthcheck](https://github.com/CarlosHe/horse-healthcheck)                                   | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
 |  [CarlosHe/staticfiles](https://github.com/CarlosHe/horse-staticfiles)                                   | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
-|  [CachopaWeb/horse-server-static](https://github.com/CachopaWeb/horse-server-static)                     | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
+|  [CachopaWeb/horse-server-static](https://github.com/CachopaWeb/horse-server-static)                     | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;✔️ |
 |  [arvanus/horse-exception-logger](https://github.com/arvanus/horse-exception-logger)                     | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;✔️ |
 |  [claudneysessa/Horse-CSResponsePagination](https://github.com/claudneysessa/Horse-CSResponsePagination) | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
 |  [claudneysessa/Horse-XSuperObjects](https://github.com/claudneysessa/Horse-XSuperObjects)               | &nbsp;&nbsp;&nbsp;✔️ | &nbsp;&nbsp;&nbsp;&nbsp;❌ |
@@ -94,6 +94,9 @@ This is a list of middlewares that are created by the Horse community, please cr
 
 ## Delphi Versions
 `Horse` works with Delphi 11 Alexandria, Delphi 10.4 Sydney, Delphi 10.3 Rio, Delphi 10.2 Tokyo, Delphi 10.1 Berlin, Delphi 10 Seattle, Delphi XE8 and Delphi XE7.
+
+## 💻 Code Contributors
+<img src="https://opencollective.com/horse/contributors.svg?width=890&button=false" alt="Code Contributors" style="max-width:100%;">
 
 ## ⚠️ License
 

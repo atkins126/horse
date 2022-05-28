@@ -14,6 +14,7 @@ uses
   Horse.Provider.FPC.CGI,
   Horse.Provider.FPC.FastCGI,
   Horse.Provider.FPC.Daemon,
+  Horse.Provider.FPC.LCL,
 {$ELSE}
   System.SysUtils,
   Horse.Provider.Console,
@@ -62,17 +63,17 @@ type
 {$ELSEIF DEFINED(HORSE_APACHE)}
   THorseProvider =
   {$IF DEFINED(FPC)}
-    Horse.Provider.FPC.Apache.THorseProvider<THorse>
+    Horse.Provider.FPC.Apache.THorseProvider<THorse>;
   {$ELSE}
-    Horse.Provider.Apache.THorseProvider<THorse>
-  {$ENDIF};
+    Horse.Provider.Apache.THorseProvider<THorse>;
+  {$ENDIF}
 {$ELSEIF DEFINED(HORSE_CGI)}
   THorseProvider =
   {$IF DEFINED(FPC)}
-    Horse.Provider.FPC.CGI.THorseProvider<THorse>
+    Horse.Provider.FPC.CGI.THorseProvider<THorse>;
   {$ELSE}
-    Horse.Provider.CGI.THorseProvider<THorse>
-  {$ENDIF};
+    Horse.Provider.CGI.THorseProvider<THorse>;
+  {$ENDIF}
 {$ELSEIF DEFINED(HORSE_FCGI)}
   THorseProvider =
   {$IF DEFINED(FPC)}
@@ -81,19 +82,21 @@ type
 {$ELSEIF DEFINED(HORSE_DAEMON)}
   THorseProvider =
   {$IF DEFINED(FPC)}
-    Horse.Provider.FPC.Daemon.THorseProvider<THorse>
+    Horse.Provider.FPC.Daemon.THorseProvider<THorse>;
   {$ELSE}
-     Horse.Provider.Daemon.THorseProvider<THorse>
-  {$ENDIF};
+     Horse.Provider.Daemon.THorseProvider<THorse>;
+  {$ENDIF}
+{$ELSEIF DEFINED(HORSE_LCL)}
+    THorseProvider = Horse.Provider.FPC.LCL.THorseProvider<THorse>;
 {$ELSEIF DEFINED(HORSE_VCL)}
   THorseProvider = Horse.Provider.VCL.THorseProvider<THorse>;
 {$ELSE}
   THorseProvider =
   {$IF DEFINED(FPC)}
-    Horse.Provider.FPC.HTTPApplication.THorseProvider<THorse>
+    Horse.Provider.FPC.HTTPApplication.THorseProvider<THorse>;
   {$ELSE}
-    Horse.Provider.Console.THorseProvider<THorse>
-  {$ENDIF};
+    Horse.Provider.Console.THorseProvider<THorse>;
+  {$ENDIF}
 {$ENDIF}
 
   THorse = class(THorseProvider);
