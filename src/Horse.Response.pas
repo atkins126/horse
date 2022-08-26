@@ -29,7 +29,9 @@ type
     function RedirectTo(const ALocation: string; const AStatus: THTTPStatus): THorseResponse; overload;
     function Status(const AStatus: Integer): THorseResponse; overload;
     function Status(const AStatus: THTTPStatus): THorseResponse; overload;
+    function SendFile(const AFileStream: TStream; const AFileName: string = ''; const AContentType: string = ''): THorseResponse; overload;
     function SendFile(const AFileName: string; const AContentType: string = ''): THorseResponse; overload;
+    function Download(const AFileStream: TStream; const AFileName: string; const AContentType: string = ''): THorseResponse; overload;
     function Download(const AFileName: string): THorseResponse; overload;
     function Render(const AFileName: string): THorseResponse; overload;
     function Status: Integer; overload;
@@ -71,7 +73,6 @@ constructor THorseResponse.Create(const AWebResponse: {$IF DEFINED(FPC)}TRespons
 begin
   FWebResponse := AWebResponse;
   {$IF DEFINED(FPC)}FWebResponse.Code{$ELSE}FWebResponse.StatusCode{$ENDIF} := THTTPStatus.Ok.ToInteger;
-
   {$IF DEFINED(FPC)}
   FWebResponse.FreeContentStream := True;
   {$ENDIF}
@@ -119,20 +120,48 @@ begin
   Result := Self;
 end;
 
+function THorseResponse.SendFile(const AFileStream: TStream; const AFileName: string; const AContentType: string): THorseResponse;
+var
+  LFileName: string;
+begin
+  Result := Self;
+
+  AFileStream.Position := 0;
+
+  LFileName := ExtractFileName(AFileName);
+
+  FWebResponse.FreeContentStream := False;
+  FWebResponse.ContentLength := AFileStream.Size;
+  FWebResponse.ContentStream := AFileStream;
+  FWebResponse.SetCustomHeader('Content-Disposition', Format('inline; filename="%s"', [LFileName]));
+
+  FWebResponse.ContentType := 'application/octet-stream';
+  if AContentType <> EmptyStr then
+    FWebResponse.ContentType := AContentType;
+
+  {$IF DEFINED(FPC)}
+  FWebResponse.SendContent;
+  {$ELSE}
+  FWebResponse.SendResponse;
+  {$ENDIF}
+end;
+
 function THorseResponse.SendFile(const AFileName: string; const AContentType: string): THorseResponse;
 var
   LFile: THorseCoreFile;
 begin
   Result := Self;
   LFile := THorseCoreFile.Create(AFileName);
+
   try
     FWebResponse.ContentLength := LFile.Size;
     FWebResponse.ContentStream := LFile.ContentStream;
     LFile.FreeContentStream := False;
+
+    FWebResponse.ContentType := AContentType;
     if AContentType = EmptyStr then
-      FWebResponse.ContentType := LFile.ContentType
-    else
-      FWebResponse.ContentType := AContentType;
+      FWebResponse.ContentType := LFile.ContentType;
+
     {$IF DEFINED(FPC)}
     FWebResponse.SendContent;
     {$ELSE}
@@ -143,18 +172,39 @@ begin
   end;
 end;
 
+function THorseResponse.Download(const AFileStream: TStream; const AFileName: string; const AContentType: string): THorseResponse;
+var
+  LFileName: string;
+begin
+  Result := Self;
+  LFileName := ExtractFileName(AFileName);
+
+  FWebResponse.FreeContentStream := False;
+  FWebResponse.ContentLength := AFileStream.Size;
+  FWebResponse.ContentStream := AFileStream;
+  FWebResponse.SetCustomHeader('Content-Disposition', Format('attachment; filename="%s"', [LFileName]));
+
+  FWebResponse.ContentType := 'application/octet-stream';
+  if AContentType <> EmptyStr then
+    FWebResponse.ContentType := AContentType;
+
+  {$IF DEFINED(FPC)}
+  FWebResponse.SendContent;
+  {$ELSE}
+  FWebResponse.SendResponse;
+  {$ENDIF}
+end;
+
 function THorseResponse.Download(const AFileName: string): THorseResponse;
 begin
   Result := Self;
   FWebResponse.SetCustomHeader('Content-Disposition', Format('attachment; filename="%s"',[ExtractFileName(AFileName)]));
-
   SendFile(AFileName, Horse.Commons.TMimeTypes.Download.ToString);
 end;
 
 function THorseResponse.Render(const AFileName: string): THorseResponse;
 begin
   Result := Self;
-
   SendFile(AFileName, Horse.Commons.TMimeTypes.TextHTML.ToString);
 end;
 

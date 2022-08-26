@@ -9,11 +9,16 @@ interface
 
 uses
 {$IF DEFINED(FPC)}
-  Classes, SysUtils, StrUtils
+  Classes,
+  SysUtils,
+  StrUtils,
+  RegExpr
 {$ELSE}
-  System.Classes, System.SysUtils
+  System.Classes,
+  System.SysUtils,
+  System.RegularExpressions
 {$ENDIF}
- ;
+  ;
 
 type
 {$IF DEFINED(FPC)}
@@ -115,17 +120,20 @@ type
     function ToInteger: Integer;
   end;
 
-  TMimeTypesHelper = {$IF DEFINED(FPC)} type {$ELSE} record {$ENDIF} helper for TMimeTypes
+  TMimeTypesHelper = {$IF DEFINED(FPC)} type {$ELSE} record {$ENDIF} helper
+  for TMimeTypes
     function ToString: string;
   end;
 
-  TLhsBracketsTypeHelper  = {$IF DEFINED(FPC)} type {$ELSE} record {$ENDIF} helper for TLhsBracketsType
+  TLhsBracketsTypeHelper = {$IF DEFINED(FPC)} type {$ELSE} record {$ENDIF} helper for TLhsBracketsType
     function ToString: string;
   end;
 
 {$IF DEFINED(FPC)}
 function StringCommandToMethodType(const ACommand: string): TMethodType;
 {$ENDIF}
+
+function MatchRoute(const AText: string; const AValues: array of string): Boolean;
 
 implementation
 
@@ -133,16 +141,77 @@ implementation
 function StringCommandToMethodType(const ACommand: string): TMethodType;
 begin
   case AnsiIndexText(ACommand, ['ANY', 'DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT']) of
-    0: Result := TMethodType.mtAny;
-    1: Result := TMethodType.mtDelete;
-    2: Result := TMethodType.mtGet;
-    3: Result := TMethodType.mtHead;
-    4: Result := TMethodType.mtPatch;
-    5: Result := TMethodType.mtPost;
-    6: Result := TMethodType.mtPut;
+    0:
+      Result := TMethodType.mtAny;
+    1:
+      Result := TMethodType.mtDelete;
+    2:
+      Result := TMethodType.mtGet;
+    3:
+      Result := TMethodType.mtHead;
+    4:
+      Result := TMethodType.mtPatch;
+    5:
+      Result := TMethodType.mtPost;
+    6:
+      Result := TMethodType.mtPut;
   end;
 end;
 {$ENDIF}
+
+function MatchRoute(const AText: string; const AValues: array of string): Boolean;
+  function ReplaceParams(const AValue: string): string;
+  var
+    LPart: string;
+    LSplitedPath: TArray<string>;
+  begin
+    Result := AValue;
+    LSplitedPath := AValue.Split(['/']);
+    for LPart in LSplitedPath do
+    begin
+      if LPart.StartsWith(':') then
+        Result := StringReplace(Result, LPart, '([^/]*)', []);
+    end;
+    Result := Trim(Result);
+    if not(Result.EndsWith('/')) then
+      Result := Result + '/';
+  end;
+
+var
+{$IF DEFINED(FPC)}
+  LRegexObj: TRegExpr;
+{$ENDIF}
+  I: Integer;
+  LText, LExpression: string;
+begin
+  Result := False;
+{$IF DEFINED(FPC)}
+  LRegexObj := TRegExpr.Create;
+  try
+{$ENDIF}
+    LText := Trim(AText);
+    if not(LText.EndsWith('/')) then
+      LText := LText + '/';
+    for I := Low(AValues) to High(AValues) do
+    begin
+      LExpression := '^(' + ReplaceParams(AValues[I]) + ')$';
+{$IF DEFINED(FPC)}
+      LRegexObj.Expression := LExpression;
+      if LRegexObj.Exec(LText) then
+{$ELSE}
+      if TRegEx.IsMatch(LText, LExpression) then
+{$ENDIF}
+      begin
+        Result := True;
+        Exit;
+      end;
+    end;
+{$IF DEFINED(FPC)}
+  finally
+    LRegexObj.Free;
+  end;
+{$ENDIF}
+end;
 
 { TLhsBracketsTypeHelper }
 
