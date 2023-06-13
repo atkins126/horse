@@ -8,9 +8,11 @@ interface
 
 uses
 {$IF DEFINED(FPC)}
-  SysUtils, Classes,
+  SysUtils,
+  Classes,
 {$ELSE}
-  System.SysUtils, System.Classes,
+  System.SysUtils,
+  System.Classes,
 {$ENDIF}
   Horse.Commons;
 
@@ -26,15 +28,21 @@ type
     FRange: string;
     FLike: string;
     FTypes: TLhsBrackets;
+    FContains: string;
+    FStartsWith: string;
+    FEndsWith: string;
   public
-    property Eq: string read Feq;
-    property Ne: string read Fne;
-    property Lt: string read Flt;
-    property Lte: string read Flte;
-    property Gt: string read Fgt;
-    property Gte: string read Fgte;
-    property Range: string read Frange;
-    property Like: string read Flike;
+    property Eq: string read FEq;
+    property Ne: string read FNe;
+    property Lt: string read FLt;
+    property Lte: string read FLte;
+    property Gt: string read FGt;
+    property Gte: string read FGte;
+    property Range: string read FRange;
+    property Like: string read FLike;
+    property Contains: string read FContains;
+    property StartsWith: string read FStartsWith;
+    property EndsWith: string read FEndsWith;
     property Types: TLhsBrackets read FTypes write FTypes;
     procedure SetValue(const AType: TLhsBracketsType; const AValue: string);
     function GetValue(const AType: TLhsBracketsType): string;
@@ -61,14 +69,18 @@ begin
       FRange := AValue;
     TLhsBracketsType.Like:
       FLike := AValue;
+    TLhsBracketsType.Contains:
+      FContains := AValue;
+    TLhsBracketsType.StartsWith:
+      FStartsWith := AValue;
+    TLhsBracketsType.EndsWith:
+      FEndsWith := AValue;
   end;
 end;
 
 function THorseCoreParamFieldLhsBrackets.GetValue(const AType: TLhsBracketsType): string;
 begin
   case AType of
-    TLhsBracketsType.Equal:
-      Result := FEq;
     TLhsBracketsType.NotEqual:
       Result := FNe;
     TLhsBracketsType.LessThan:
@@ -83,8 +95,15 @@ begin
       Result := FRange;
     TLhsBracketsType.Like:
       Result := FLike;
+    TLhsBracketsType.Contains:
+      Result := FContains;
+    TLhsBracketsType.StartsWith:
+      Result := FStartsWith;
+    TLhsBracketsType.EndsWith:
+      Result := FEndsWith;
+  else
+    Result := FEq;
   end;
 end;
 
 end.
-

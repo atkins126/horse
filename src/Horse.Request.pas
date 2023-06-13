@@ -1,21 +1,29 @@
 unit Horse.Request;
 
 {$IF DEFINED(FPC)}
-  {$MODE DELPHI}{$H+}
+{$MODE DELPHI}{$H+}
 {$ENDIF}
 
 interface
 
 uses
 {$IF DEFINED(FPC)}
-  SysUtils, Classes, fpHTTP, HTTPDefs,
+  SysUtils,
+  Classes,
+  fpHTTP,
+  HTTPDefs,
 {$ELSE}
-  System.SysUtils, System.Classes, Web.HTTPApp,
-  {$IF CompilerVersion > 32.0}
-    Web.ReqMulti,
-  {$ENDIF}
+  System.SysUtils,
+  System.Classes,
+  Web.HTTPApp,
+{$IF CompilerVersion > 32.0}
+  Web.ReqMulti,
 {$ENDIF}
-  Horse.Core.Param, Horse.Core.Param.Header, Horse.Commons, Horse.Session;
+{$ENDIF}
+  Horse.Core.Param,
+  Horse.Core.Param.Header,
+  Horse.Commons,
+  Horse.Session;
 
 type
   THorseRequest = class
@@ -48,6 +56,9 @@ type
     function Cookie: THorseCoreParam;
     function ContentFields: THorseCoreParam;
     function MethodType: TMethodType;
+    function ContentType: string;
+    function Host: string;
+    function PathInfo: string;
     function RawWebRequest: {$IF DEFINED(FPC)}TRequest{$ELSE}TWebRequest{$ENDIF};
     property Sessions: THorseSessions read FSessions;
     constructor Create(const AWebRequest: {$IF DEFINED(FPC)}TRequest{$ELSE}TWebRequest{$ENDIF});
@@ -125,12 +136,34 @@ begin
     LParam := THorseCoreParamHeader.GetHeaders(FWebRequest);
     FHeaders := THorseCoreParam.Create(LParam).Required(False);
   end;
-  result := FHeaders;
+  Result := FHeaders;
+end;
+
+function THorseRequest.Host: string;
+begin
+  Result := FWebRequest.Host;
+end;
+
+function THorseRequest.ContentType: string;
+begin
+  Result := FWebRequest.ContentType;
+end;
+
+function THorseRequest.PathInfo: string;
+var
+  LPrefix: string;
+begin
+  LPrefix := EmptyStr;
+  if FWebRequest.PathInfo = EmptyStr then
+    LPrefix := '/';
+  Result := LPrefix + FWebRequest.PathInfo;
 end;
 
 procedure THorseRequest.InitializeContentFields;
+{$IF NOT DEFINED(FPC)}
 const
   CONTENT_DISPOSITION = 'Content-Disposition: form-data; name=';
+{$ENDIF}
 var
   I: Integer;
   LName: String;
@@ -147,23 +180,23 @@ begin
   begin
     if IsMultipartForm then
     begin
-      {$IF DEFINED(FPC)}
-        LName := FWebRequest.ContentFields.Names[I];
-        LValue := FWebRequest.ContentFields.ValueFromIndex[I];
-      {$ELSE}
-      {$IF CompilerVersion <= 31.0}
-        if FWebRequest.ContentFields[I].StartsWith(CONTENT_DISPOSITION) then
-        begin
-          LName := FWebRequest.ContentFields[I]
-                      .Replace(CONTENT_DISPOSITION, EmptyStr)
-                      .Replace('"', EmptyStr);
-          LValue := FWebRequest.ContentFields[I + 1];
-        end;
-      {$ELSE}
-        LName := FWebRequest.ContentFields.Names[I];
-        LValue := FWebRequest.ContentFields.ValueFromIndex[I];
-      {$ENDIF}
-      {$ENDIF}
+{$IF DEFINED(FPC)}
+      LName := FWebRequest.ContentFields.Names[I];
+      LValue := FWebRequest.ContentFields.ValueFromIndex[I];
+{$ELSE}
+{$IF CompilerVersion <= 31.0}
+      if FWebRequest.ContentFields[I].StartsWith(CONTENT_DISPOSITION) then
+      begin
+        LName := FWebRequest.ContentFields[I]
+          .Replace(CONTENT_DISPOSITION, EmptyStr)
+          .Replace('"', EmptyStr);
+        LValue := FWebRequest.ContentFields[I + 1];
+      end;
+{$ELSE}
+      LName := FWebRequest.ContentFields.Names[I];
+      LValue := FWebRequest.ContentFields.ValueFromIndex[I];
+{$ENDIF}
+{$ENDIF}
     end
     else
     begin
@@ -208,36 +241,50 @@ begin
   FQuery := THorseCoreParam.Create(THorseList.Create).Required(False);
   for LItem in FWebRequest.QueryFields do
   begin
-    LEqualFirstPos := Pos('=', Litem);
-    LKey := Copy(Litem, 1, LEqualFirstPos - 1);
-    LValue := Copy(Litem, LEqualFirstPos + 1, Length(LItem));
+    LEqualFirstPos := Pos('=', LItem);
+    LKey := Copy(LItem, 1, LEqualFirstPos - 1);
+    LValue := Copy(LItem, LEqualFirstPos + 1, Length(LItem));
     FQuery.Dictionary.AddOrSetValue(LKey, LValue);
   end;
 end;
 
 function THorseRequest.IsFormURLEncoded: Boolean;
 var
-  LContentType: String;
-  LFormUrlEncoded: String;
+  LContentType, LFormUrlEncoded: string;
 begin
   LContentType := FWebRequest.ContentType;
   LFormUrlEncoded := TMimeTypes.ApplicationXWWWFormURLEncoded.ToString;
+{$IF DEFINED(FPC)}
   Result := StrLIComp(PChar(LContentType), PChar(LFormUrlEncoded), Length(LFormUrlEncoded)) = 0;
+{$ELSE}
+{$IF CompilerVersion <= 30}
+  Result := LContentType = PChar(LFormUrlEncoded);
+{$ELSE}
+  Result := StrLIComp(PChar(LContentType), PChar(LFormUrlEncoded), Length(LFormUrlEncoded)) = 0;
+{$IFEND}
+{$ENDIF}
 end;
 
 function THorseRequest.IsMultipartForm: Boolean;
 var
-  LContentType: String;
-  LFormData: String;
+  LContentType, LFormData: string;
 begin
   LContentType := FWebRequest.ContentType;
   LFormData := TMimeTypes.MultiPartFormData.ToString;
+{$IF DEFINED(FPC)}
   Result := StrLIComp(PChar(LContentType), PChar(LFormData), Length(PChar(LFormData))) = 0;
+{$ELSE}
+{$IF CompilerVersion <= 30}
+  Result := LContentType = PChar(LFormData);
+{$ELSE}
+  Result := StrLIComp(PChar(LContentType), PChar(LFormData), Length(PChar(LFormData))) = 0;
+{$IFEND}
+{$ENDIF}
 end;
 
 function THorseRequest.MethodType: TMethodType;
 begin
-  Result := {$IF DEFINED(FPC)}StringCommandToMethodType(FWebRequest.Method);{$ELSE}FWebRequest.MethodType;{$ENDIF}
+  Result := {$IF DEFINED(FPC)}StringCommandToMethodType(FWebRequest.Method); {$ELSE}FWebRequest.MethodType; {$ENDIF}
 end;
 
 function THorseRequest.Params: THorseCoreParam;

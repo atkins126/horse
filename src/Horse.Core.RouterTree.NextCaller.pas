@@ -8,11 +8,20 @@ interface
 
 uses
 {$IF DEFINED(FPC)}
-  SysUtils, Generics.Collections, fpHTTP, httpprotocol,
+  SysUtils,
+  Generics.Collections,
+  fpHTTP,
+  httpprotocol,
 {$ELSE}
-  System.NetEncoding, System.SysUtils, Web.HTTPApp, System.Generics.Collections,
+  System.NetEncoding,
+  System.SysUtils,
+  Web.HTTPApp,
+  System.Generics.Collections,
 {$ENDIF}
-  Horse.Commons, Horse.Request, Horse.Response, Horse.Callback;
+  Horse.Commons,
+  Horse.Request,
+  Horse.Response,
+  Horse.Callback;
 
 type
   TNextCaller = class
@@ -28,7 +37,7 @@ type
     FCallNextPath: TCallNextPath;
     FIsGroup: Boolean;
     FTag: string;
-    FIsRegex: Boolean;
+    FIsParamsKey: Boolean;
     FFound: ^Boolean;
   public
     function Init: TNextCaller;
@@ -40,7 +49,7 @@ type
     function SetIsGroup(const AIsGroup: Boolean): TNextCaller;
     function SetMiddleware(const AMiddleware: TList<THorseCallback>): TNextCaller;
     function SetTag(const ATag: string): TNextCaller;
-    function SetIsRegex(const AIsRegex: Boolean): TNextCaller;
+    function SetIsParamsKey(const AIsParamsKey: Boolean): TNextCaller;
     function SetOnCallNextPath(const ACallNextPath: TCallNextPath): TNextCaller;
     function SetFound(var AFound: Boolean): TNextCaller;
     procedure Next;
@@ -48,7 +57,9 @@ type
 
 implementation
 
-uses Horse.Exception, Horse.Exception.Interrupted;
+uses
+  Horse.Exception,
+  Horse.Exception.Interrupted;
 
 function TNextCaller.Init: TNextCaller;
 var
@@ -59,7 +70,7 @@ begin
     LCurrent := FPath.Dequeue;
   FIndex := -1;
   FIndexCallback := -1;
-  if FIsRegex then
+  if FIsParamsKey then
     FRequest.Params.Dictionary.Add(FTag, {$IF DEFINED(FPC)}HTTPDecode(LCurrent){$ELSE}TNetEncoding.URL.Decode(LCurrent){$ENDIF});
 end;
 
@@ -67,7 +78,7 @@ procedure TNextCaller.Next;
 var
   LCallback: TList<THorseCallback>;
 begin
-  inc(FIndex);
+  Inc(FIndex);
   if (FMiddleware.Count > FIndex) then
   begin
     FFound^ := True;
@@ -75,10 +86,9 @@ begin
     if (FMiddleware.Count > FIndex) then
       Next;
   end
-  else
-  if (FPath.Count = 0) and assigned(FCallBack) then
+  else if (FPath.Count = 0) and Assigned(FCallBack) then
   begin
-    inc(FIndexCallback);
+    Inc(FIndexCallback);
     if FCallBack.TryGetValue(FHTTPType, LCallback) then
     begin
       if (LCallback.Count > FIndexCallback) then
@@ -113,12 +123,11 @@ begin
   end
   else
     FFound^ := FCallNextPath(FPath, FHTTPType, FRequest, FResponse);
-
   if not FFound^ then
     FResponse.Send('Not Found').Status(THTTPStatus.NotFound);
 end;
 
-function TNextCaller.SetCallback(const ACallback: TObjectDictionary < TMethodType, TList < THorseCallback >> ): TNextCaller;
+function TNextCaller.SetCallback(const ACallback: TObjectDictionary<TMethodType, TList<THorseCallback>>): TNextCaller;
 begin
   FCallBack := ACallback;
   Result := Self;
@@ -142,9 +151,9 @@ begin
   Result := Self;
 end;
 
-function TNextCaller.SetIsRegex(const AIsRegex: Boolean): TNextCaller;
+function TNextCaller.SetIsParamsKey(const AIsParamsKey: Boolean): TNextCaller;
 begin
-  FIsRegex := AIsRegex;
+  FIsParamsKey := AIsParamsKey;
   Result := Self;
 end;
 

@@ -12,13 +12,12 @@ uses
   Classes,
   SysUtils,
   StrUtils,
-  RegExpr
+  RegExpr;
 {$ELSE}
   System.Classes,
   System.SysUtils,
-  System.RegularExpressions
+  System.RegularExpressions;
 {$ENDIF}
-  ;
 
 type
 {$IF DEFINED(FPC)}
@@ -111,7 +110,8 @@ type
     Download);
 
   TMessageType = (Default, Error, Warning, Information);
-  TLhsBracketsType = (Equal, NotEqual, LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual, Range, Like);
+  TLhsBracketsType = (Equal, NotEqual, LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual, Range, Like,
+    Contains, StartsWith, EndsWith);
 {$SCOPEDENUMS OFF}
 
   TLhsBrackets = set of TLhsBracketsType;
@@ -140,26 +140,26 @@ implementation
 {$IF DEFINED(FPC)}
 function StringCommandToMethodType(const ACommand: string): TMethodType;
 begin
-  case AnsiIndexText(ACommand, ['ANY', 'DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT']) of
+  Result := TMethodType.mtAny;
+  case AnsiIndexText(ACommand, ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT']) of
     0:
-      Result := TMethodType.mtAny;
-    1:
       Result := TMethodType.mtDelete;
-    2:
+    1:
       Result := TMethodType.mtGet;
-    3:
+    2:
       Result := TMethodType.mtHead;
-    4:
+    3:
       Result := TMethodType.mtPatch;
-    5:
+    4:
       Result := TMethodType.mtPost;
-    6:
+    5:
       Result := TMethodType.mtPut;
   end;
 end;
 {$ENDIF}
 
 function MatchRoute(const AText: string; const AValues: array of string): Boolean;
+
   function ReplaceParams(const AValue: string): string;
   var
     LPart: string;
@@ -234,6 +234,12 @@ begin
       Result := '[range]';
     TLhsBracketsType.Like:
       Result := '[like]';
+    TLhsBracketsType.Contains:
+      Result := '[contains]';
+    TLhsBracketsType.StartsWith:
+      Result := '[startsWith]';
+    TLhsBracketsType.EndsWith:
+      Result := '[endsWith]';
   end;
 end;
 

@@ -7,9 +7,6 @@ interface
 uses Classes, SysUtils, Forms, Controls, Graphics, Dialogs, StdCtrls, Buttons, Horse;
 
 type
-
-  { TFrmMain }
-
   TFrmMain = class(TForm)
     btnStart: TBitBtn;
     btnStop: TBitBtn;
@@ -17,6 +14,7 @@ type
     Label1: TLabel;
     procedure btnStartClick(Sender: TObject);
     procedure btnStopClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
   private
     procedure Status;
     procedure Start;
@@ -28,7 +26,7 @@ var
 
 implementation
 
-procedure DoPing(Req: THorseRequest; Res: THorseResponse; Next: TNextProc);
+procedure DoPing(Req: THorseRequest; Res: THorseResponse);
 begin
   Res.Send('pong');
 end;
@@ -47,6 +45,11 @@ begin
   Status;
 end;
 
+procedure TFrmMain.FormCreate(Sender: TObject);
+begin
+  THorse.Get('/ping', DoPing);
+end;
+
 procedure TFrmMain.Status;
 begin
   btnStop.Enabled := THorse.IsRunning;
@@ -56,7 +59,7 @@ end;
 
 procedure TFrmMain.Start;
 begin
-  THorse.Get('/ping', DoPing);
+  // Need to set "HORSE_LCL" compilation directive
   THorse.Listen(StrToInt(edtPort.Text));
 end;
 
